@@ -32,69 +32,53 @@
     </header>
 
     <!-- Formulário para inserir times e enviar vídeo -->
-    <section
-      class="match-input"
-      style="padding: 1rem; background: #f9f9f9; border-bottom: 1px solid #ddd;"
-    >
-      <h3>Informe os times e envie o vídeo</h3>
-      <form
-        id="matchForm"
-        style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;"
-      >
-        <label>
-          Time da Casa:
-          <input
-            type="text"
-            id="homeTeam"
-            placeholder="Time da Casa"
-            required
-            style="padding: 0.4rem"
-          />
-        </label>
-        <label>
-          Time Visitante:
-          <input
-            type="text"
-            id="awayTeam"
-            placeholder="Time Visitante"
-            required
-            style="padding: 0.4rem"
-          />
-        </label>
-        <label>
-          Selecione o vídeo:
-          <input
-            type="file"
-            id="videoUpload"
-            accept="video/*"
-            required
-            style="padding: 0.4rem"
-          />
-        </label>
-        <button type="submit" style="padding: 0.5rem 1rem; cursor: pointer">
-          Carregar Jogo
-        </button>
-      </form>
+    <section class="match-input">
+      <div class="upload-container">
+        <h3>Configuração da Análise</h3>
+        <div class="upload-card">
+          <div class="upload-header">
+            <i class="fas fa-futbol"></i>
+            <h4>Nova Análise Tática</h4>
+          </div>
+          <form id="matchForm" class="upload-form">
+            <div class="form-row">
+              <label>
+                <span>Time da Casa</span>
+                <input type="text" id="homeTeam" placeholder="Nome do time" required />
+              </label>
+              <label>
+                <span>Time Visitante</span>
+                <input type="text" id="awayTeam" placeholder="Nome do time" required />
+              </label>
+            </div>
+            
+            <div class="upload-area" id="dropZone">
+              <i class="fas fa-video"></i>
+              <p>Arraste e solte seu vídeo aqui ou</p>
+              <label class="upload-button">
+                Selecione um arquivo
+                <input type="file" id="videoUpload" accept="video/*" required />
+              </label>
+              <small>Formatos suportados: MP4, MOV, AVI (até 500MB)</small>
+            </div>
+            
+            <button type="submit" class="submit-button">
+              <i class="fas fa-play-circle"></i> Iniciar Análise
+            </button>
+          </form>
+        </div>
+      </div>
     </section>
 
-    <main class="video-container">
+    <main class="video-container" id="videoContainer">
+      <div class="video-placeholder" id="videoPlaceholder">
+        <i class="fas fa-video"></i>
+        <p>Nenhum vídeo carregado</p>
+        <small>Envie um vídeo para começar a análise</small>
+      </div>
       <div class="spinner" id="loadingSpinner"></div>
-      <div class="video-wrapper">
-        <video
-          id="tactical-video"
-          class="video-js vjs-default-skin"
-          controls
-          preload="auto"
-          data-setup="{}"
-          poster="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4f533f4b-52b0-4dcd-8bbe-97be9c339a3a.png"
-        >
-          <source
-            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4"
-            type="video/mp4"
-          />
-        </video>
+      <div class="video-wrapper" style="display:none;">
         <canvas class="drawing-canvas" id="drawingCanvas"></canvas>
-
         <div class="video-tools">
           <button class="tool-button" id="drawBtn" title="Desenhar">
             <i class="fas fa-pencil-alt"></i>
@@ -123,11 +107,7 @@
         </div>
         <div class="timeline-bar" id="timelineBar">
           <div class="timeline-progress" id="timelineProgress"></div>
-          <div class="timeline-markers" id="timelineMarkers">
-            <div class="marker" style="left: 25%" data-type="Gol"></div>
-            <div class="marker" style="left: 50%" data-type="Falta"></div>
-            <div class="marker" style="left: 75%" data-type="Cartão"></div>
-          </div>
+          <div class="timeline-markers" id="timelineMarkers"></div>
         </div>
       </div>
     </main>
@@ -197,9 +177,7 @@
 
       <div class="notes-section">
         <h3>Anotações</h3>
-        <textarea
-          style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 5px"
-        ></textarea>
+        <textarea style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 5px"></textarea>
         <button class="control-button" style="width: 100%; margin-top: 10px">
           <i class="fas fa-save"></i> Salvar Anotações
         </button>
