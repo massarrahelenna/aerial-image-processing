@@ -384,3 +384,154 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #a0a0a0;
     }
+    <<<<<<< SEARCH
+.video-upload {
+  position: relative;
+  display: inline-block;
+}
+
+.video-upload input[type="file"] {
+  display: none; /* Esconde o input padrão */
+}
+
+.video-upload .upload-button {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background-color: var(--secondary);
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.video-upload .upload-button:hover {
+  background-color: #2980b9;
+}
+=======
+.match-input {
+  padding: 2rem;
+  background: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+.upload-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.upload-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 2rem;
+}
+
+.upload-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.upload-header i {
+  font-size: 3rem;
+  color: var(--secondary);
+  margin-bottom: 1rem;
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.form-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 0.5rem;
+}
+
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.upload-area:hover {
+  border-color: var(--secondary);
+}
+
+.upload-area i {
+  font-size: 2.5rem;
+  color: var(--secondary);
+  margin-bottom: 1rem;
+}
+
+.upload-area p {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.upload-button {
+  display: inline-block;
+  background: var(--secondary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin: 0.5rem 0;
+}
+
+.upload-button:hover {
+  background: #2980b9;
+}
+
+.upload-button input {
+  display: none;
+}
+
+.submit-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submit-button:hover {
+  background: #c0392b;
+}
+
+.video-placeholder {
+  text-align: center;
+  padding: 3rem;
+  color: #777;
+}
+
+.video-placeholder i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+>>>>>>> REPLACE
+
