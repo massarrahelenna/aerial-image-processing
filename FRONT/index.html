@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TacticalVision - Análise Tática de Futebol</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --accent: #e74c3c;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+      --success: #27ae60;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #f5f5f5;
+      color: var(--dark);
+    }
+    
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+    }
+    
+    header {
+      grid-column: 1 / span 2;
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .logo img {
+      height: 40px;
+    }
+    
+    .match-info {
+      text-align: center;
+    }
+    
+    .match-info h2 {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    .match-teams {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    .match-date {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    
+    .video-container {
+      position: relative;
+      background-color: black;
+      padding: 20px;
+    }
+    
+    .video-wrapper {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      border: 2px solid var(--secondary);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .video-js {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16/9;
+    }
+    
+    .video-tools {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .tool-button {
+      background-color: rgba(255,255,255,0.8);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--primary);
+    }
+    
+    .tool-button:hover {
+      background-color: white;
+      transform: scale(1.1);
+    }
+    
+    .tool-button.active {
+      background-color: var(--secondary);
+      color: white;
+    }
+    
+    .timeline-container {
+      padding: 20px;
+      background-color: white;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    
+    .timeline-bar {
+      height: 6px;
+      background-color: #ddd;
+      border-radius: 3px;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .timeline-progress {
+      position: absolute;
+      height: 100%;
+      background-color: var(--secondary);
+      border-radius: 3px;
+      width: 0%;
+    }
+    
+    .timeline-markers {
+      position: absolute;
+      top: -7px;
+      width: 100%;
+      height: 20px;
+    }
+    
+    .marker {
+      position: absolute;
+      width: 4px;
+      height: 20px;
+      background-color: var(--accent);
+      transform: translateX(-2px);
+      cursor: pointer;
+    }
+    
+    .marker::after {
+      content: attr(data-type);
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: white;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    .marker:hover::after {
+      opacity: 1;
+    }
+    
+    .sidebar {
+      background-color: white;
+      border-left: 1px solid #ddd;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    
+    .stats-section {
+      margin-bottom: 20px;
+    }
+    
+    .stats-section h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--primary);
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      font-weight: bold;
+    }
+    
+    .stat-value {
+      color: var(--secondary);
+    }
+    
+    .formation-container {
+      margin: 20px 0;
+    }
+    
+    .formation-title {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    .formation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      place-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .formation-player {
+      width: 30px;
+      height: 30px;
+      background-color: var(--secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    
+    .player-info {
+      border: 1px solid #eee;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    
+    .controls {
+      grid-column: 1 / span 2;
+      background-color: var(--primary);
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .main-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    
+    .control-button {
+      background-color: var(--secondary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .control-button:hover {
+      background-color: #2980b9;
+    }
+    
+    .control-button i {
+      margin-right: 5px;
+    }
+    
+    .edit-tools {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+    }
+    
+    .drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    
+    .annotation-modal {
+      position: absolute;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 20;
+      display: none;
+    }
+    
+    .annotation-modal input {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 5px;
+      border: 1px solid #ddd;
+    }
+    
+    @media (max-width: 992px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto;
+      }
+      
+      header, .controls {
+        grid-column: 1;
+      }
+      
+      .sidebar {
+        border-left: none;
+        border-top: 1px solid #ddd;
+      }
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: var(--secondary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #b8b8b8;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a0a0a0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/157f4a92-3528-47a9-bcca-2df6e50375bf.png" alt="TacticalVision logo - A football with tactical lines overlay" />
+        <h1>TacticalVision</h1>
+      </div>
+      <div class="match-info">
+        <div class="match-teams">
+          <span>Barcelona</span>
+          <span>vs</span>
+          <span>Real Madrid</span>
+        </div>
+        <h2>Liga Espanhola - Matchday 10</h2>
+        <div class="match-date">15 de Outubro de 2023</div>
+      </div>
+      <div class="user-actions">
+        <button class="control-button">
+          <i class="fas fa-user"></i> Perfil
+        </button>
+      </div>
+    </header>
+    
+    <main class="video-container">
+      <div class="spinner" id="loadingSpinner"></div>
+      <div class="video-wrapper">
+        <video
+          id="tactical-video"
+          class="video-js vjs-default-skin"
+          controls
+          preload="auto"
+          data-setup='{}'
+          poster="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4f533f4b-52b0-4dcd-8bbe-97be9c339a3a.png"
+        >
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4" type="video/mp4">
+        </video>
+        <canvas class="drawing-canvas" id="drawingCanvas"></canvas>
+        
+        <div class="video-tools">
+          <button class="tool-button" id="drawBtn" title="Desenhar">
+            <i class="fas fa-pencil-alt"></i>
+          </button>
+          <button class="tool-button" id="arrowBtn" title="Seta">
+            <i class="fas fa-arrow-right"></i>
+          </button>
+          <button class="tool-button" id="lineBtn" title="Linha">
+            <i class="fas fa-slash"></i>
+          </button>
+          <button class="tool-button" id="circleBtn" title="Círculo">
+            <i class="far fa-circle"></i>
+          </button>
+          <button class="tool-button" id="textBtn" title="Texto">
+            <i class="fas fa-font"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="timeline-container">
+        <div class="timeline-header">
+          <h3>Timeline Tática</h3>
+          <button class="control-button small" id="addMarkerBtn">
+            <i class="fas fa-plus"></i> Adicionar Marcador
+          </button>
+        </div>
+        <div class="timeline-bar" id="timelineBar">
+          <div class="timeline-progress" id="timelineProgress"></div>
+          <div class="timeline-markers" id="timelineMarkers">
+            <div class="marker" style="left: 25%;" data-type="Gol"></div>
+            <div class="marker" style="left: 50%;" data-type="Falta"></div>
+            <div class="marker" style="left: 75%;" data-type="Cartão"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <aside class="sidebar">
+      <div class="stats-section">
+        <h3>Estatísticas do Jogo</h3>
+        <div class="stat-item">
+          <span class="stat-label">Posse de Bola:</span>
+          <span class="stat-value">65% - 35%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Chutes:</span>
+          <span class="stat-value">12 - 8</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Chutes no Gol:</span>
+          <span class="stat-value">5 - 3</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Faltas:</span>
+          <span class="stat-value">10 - 14</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Escanteios:</span>
+          <span class="stat-value">5 - 2</span>
+        </div>
+      </div>
+      
+      <div class="formation-container">
+        <h3 class="formation-title">Formação: 4-3-3</h3>
+        <div class="formation-grid">
+          <div class="formation-player">9</div>
+          <div class="formation-player">10</div>
+          <div class="formation-player">11</div>
+          <div class="formation-player">8</div>
+          <div class="formation-player">5</div>
+          <div class="formation-player">6</div>
+          <div class="formation-player">3</div>
+          <div class="formation-player">4</div>
+          <div class="formation-player">2</div>
+          <div class="formation-player"></div>
+          <div class="formation-player">1</div>
+          <div class="formation-player"></div>
+        </div>
+        
+        <div class="player-info">
+          <h4>Informações do Jogador</h4>
+          <div class="stat-item">
+            <span class="stat-label">Nome:</span>
+            <span class="stat-value" id="playerName">Nenhum jogador selecionado</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Posição:</span>
+            <span class="stat-value" id="playerPosition">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Distância:</span>
+            <span class="stat-value" id="playerDistance">0 km</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Passes:</span>
+            <span class="stat-value" id="playerPasses">0/0 (0%)</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="notes-section">
+        <h3>Anotações</h3>
+        <textarea style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+        <button class="control-button" style="width: 100%; margin-top: 10px;">
+          <i class="fas fa-save"></i> Salvar Anotações
+        </button>
+      </div>
+    </aside>
+    
+    <div class="controls">
+      <div class="main-controls">
+        <button class="control-button" id="playBtn">
+          <i class="fas fa-play"></i> Play/Pause
+        </button>
+        <button class="control-button" id="rewindBtn">
+          <i class="fas fa-backward"></i> Retroceder 10s
+        </button>
+        <button class="control-button" id="forwardBtn">
+          <i class="fas fa-forward"></i> Avançar 10s
+        </button>
+        <div class="speed-control">
+          <span>Velocidade:</span>
+          <select id="speedSelect">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="edit-tools">
+        <button class="control-button" id="saveSessionBtn">
+          <i class="fas fa-save"></i> Salvar Sessão
+        </button>
+        <button class="control-button" id="exportBtn">
+          <i class="fas fa-file-export"></i> Exportar
+        </button>
+      </div>
+    </div>
+    
+    <div class="annotation-modal" id="annotationModal">
+      <input type="text" placeholder="Título da anotação">
+      <textarea placeholder="Descrição..."></textarea>
+      <button class="control-button" style="width: 100%;">Adicionar</button>
+    </div>
+  </div>
+
+  <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const video = videojs('tactical-video')
+      
+      // Canvas setup
+      const canvas = document.getElementById('drawingCanvas')
+      const ctx = canvas.getContext('2d')
+      let isDrawing = false
+      let currentTool = 'none'
+      
+      // Resize canvas to video dimensions
+      function resizeCanvas() {
+        const videoElement = document.querySelector('.video-js')
+        canvas.width = videoElement.offsetWidth
+        canvas.height = videoElement.offsetHeight
+      }
+      
+      resizeCanvas()
+      window.addEventListener('resize', resizeCanvas)
+      
+      // Tool buttons functionality
+      document.getElementById('drawBtn').addEventListener('click', function() {
+        currentTool = 'draw'
+        updateToolButtons()
+      })
+      
+      document.getElementById('arrowBtn').addEventListener('click', function() {
+        currentTool = 'arrow'
+        updateToolButtons()
+      })
+      
+      document.getElementById('lineBtn').addEventListener('click', function() {
+        currentTool = 'line'
+        updateToolButtons()
+      })
+      
+      document.getElementById('circleBtn').addEventListener('click', function() {
+        currentTool = 'circle'
+        updateToolButtons()
+      })
+      
+      document.getElementById('textBtn').addEventListener('click', function() {
+        currentTool = 'text'
+        updateToolButtons()
+        showTextInput()
+      })
+      
+      function updateToolButtons() {
+        const tools = ['drawBtn', 'arrowBtn', 'lineBtn', 'circleBtn', 'textBtn']
+        tools.forEach(tool => {
+          const btn = document.getElementById(tool)
+          btn.classList.remove('active')
+        })
+        
+        if (currentTool !== 'none') {
+          document.getElementById(currentTool + 'Btn').classList.add('active')
+        }
+      }
+      
+      // Canvas drawing functionality
+      let startX, startY
+      
+      canvas.addEventListener('mousedown', function(e) {
+        if (currentTool === 'none') return
+        
+        isDrawing = true
+        startX = e.offsetX
+        startY = e.offsetY
+        
+        if (currentTool === 'draw') {
+          ctx.beginPath()
+          ctx.moveTo(startX, startY)
+        }
+      })
+      
+      canvas.addEventListener('mousemove', function(e) {
+        if (!isDrawing) return
+        
+        const x = e.offsetX
+        const y = e.offsetY
+        
+        ctx.strokeStyle = '#e74c3c'
+        ctx.lineWidth = 3
+        ctx.lineCap = 'round'
+        
+        switch(currentTool) {
+          case 'draw':
+            ctx.lineTo(x, y)
+            ctx.stroke()
+            break
+          case 'line':
+            clearCanvas()
+            ctx.beginPath()
+            ctx.moveTo(startX, startY)
+            ctx.lineTo(x, y)
+            ctx.stroke()
+            break
+          case 'arrow':
+            drawArrow(startX, startY, x, y)
+            break
+          case 'circle':
+            const radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))
+            clearCanvas()
+            ctx.beginPath()
+            ctx.arc(startX, startY, radius, 0, Math.PI * 2)
+            ctx.stroke()
+            break
+        }
+      })
+      
+      canvas.addEventListener('mouseup', function() {
+        if (!isDrawing) return
+        
+        isDrawing = false
+        if (currentTool === 'draw') {
+          ctx.closePath()
+        }
+      })
+      
+      function drawArrow(fromX, fromY, toX, toY) {
+        clearCanvas()
+        
+        // Draw line
+        ctx.beginPath()
+        ctx.moveTo(fromX, fromY)
+        ctx.lineTo(toX, toY)
+        ctx.stroke()
+        
+        // Arrow head
+        const headLength = 15
+        const angle = Math.atan2(toY - fromY, toX - fromX)
+        
+        ctx.beginPath()
+        ctx.moveTo(toX, toY)
+        ctx.lineTo(
+          toX - headLength * Math.cos(angle - Math.PI / 6),
+          toY - headLength * Math.sin(angle - Math.PI / 6)
+        )
+        ctx.stroke()
+        
+        ctx.beginPath()
+        ctx.moveTo(toX, toY)
+        ctx.lineTo(
+          toX - headLength * Math.cos(angle + Math.PI / 6),
+          toY - headLength * Math.sin(angle + Math.PI / 6)
+        )
+        ctx.stroke()
+      }
+      
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
+      
+      function showTextInput() {
+        const modal = document.getElementById('annotationModal')
+        modal.style.display = 'block'
+        modal.style.left = (canvas.offsetLeft + canvas.width / 4) + 'px'
+        modal.style.top = (canvas.offsetTop + canvas.height / 3) + 'px'
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function closeModal(e) {
+          if (!modal.contains(e.target) && e.target !== document.getElementById('textBtn')) {
+            modal.style.display = 'none'
+            document.removeEventListener('click', closeModal)
+          }
+        })
+      }
+      
+      // Video controls
+      document.getElementById('playBtn').addEventListener('click', function() {
+        if (video.paused()) {
+          video.play()
+        } else {
+          video.pause()
+        }
+      })
+      
+      document.getElementById('rewindBtn').addEventListener('click', function() {
+        video.currentTime(Math.max(0, video.currentTime() - 10))
+      })
+      
+      document.getElementById('forwardBtn').addEventListener('click', function() {
+        video.currentTime(Math.min(video.duration(), video.currentTime() + 10))
+      })
+      
+      document.getElementById('speedSelect').addEventListener('change', function() {
+        video.playbackRate(this.value)
+      })
+      
+      // Timeline functionality
+      const timelineBar = document.getElementById('timelineBar')
+      const timelineProgress = document.getElementById('timelineProgress')
+      const timelineMarkers = document.getElementById('timelineMarkers')
+      
+      video.on('timeupdate', function() {
+        const percent = (video.currentTime() / video.duration()) * 100
+        timelineProgress.style.width = percent + '%'
+      })
+      
+      timelineBar.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect()
+        const percent = (e.clientX - rect.left) / rect.width
+        video.currentTime(percent * video.duration())
+      })
+      
+      document.getElementById('addMarkerBtn').addEventListener('click', function() {
+        const percent = (video.currentTime() / video.duration()) * 100
+        const marker = document.createElement('div')
+        marker.className = 'marker'
+        marker.style.left = percent + '%'
+        marker.dataset.type = 'Marcador'
+        
+        marker.addEventListener('click', function(e) {
+          e.stopPropagation()
+          video.currentTime((parseFloat(this.style.left) / 100) * video.duration())
+        })
+        
+        timelineMarkers.appendChild(marker)
+      })
+      
+      // Formation player selection
+      document.querySelectorAll('.formation-player').forEach(player => {
+        player.addEventListener('click', function() {
+          if (this.textContent) { // Only if has number
+            document.getElementById('playerName').textContent = `Jogador ${this.textContent}`
+            document.getElementById('playerPosition').textContent = this.parentElement === document.querySelector('.formation-grid') ? 
+              'Atacante' : 'Meio-campo'
+            document.getElementById('playerDistance').textContent = `${Math.round(Math.random() * 10)}.${Math.round(Math.random() * 9)} km`
+            document.getElementById('playerPasses').textContent = 
+              `${Math.round(Math.random() * 30)}/${Math.round(Math.random() * 40)} (${Math.round(Math.random() * 100)}%)`
+          }
+        })
+      })
+      
+      // Export functionality
+      document.getElementById('exportBtn').addEventListener('click', function() {
+        alert('Exportando análise tática...')
+      })
+      
+      // Session save
+      document.getElementById('saveSessionBtn').addEventListener('click', function() {
+        alert('Sessão salva com sucesso!')
+      })
+    })
+  </script>
+</body>
+</html>
+
