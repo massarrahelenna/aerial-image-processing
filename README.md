@@ -12,7 +12,6 @@ aerial-image-processing/
 ├── Códigos-AV1/               # Code used in the first assessment (AV1)
 ├── Decision_Trees/            # Decision Tree implementations and analysis
 ├── Resultados/                # Output images and experiment results
-├── TaticView/                 # Tactical visualizations and data analysis
 ├── Trabalho_Final/            # Final course project
 └── README.md
 ```
